@@ -1,16 +1,24 @@
-import React from 'react';
+import { useSelector } from 'react-redux';
+import ContactListItem from '../ContactListItem/ContactListItem';
+import styled from 'styled-components';
 
-const ContactList = ({ contacts, onDeleteContact }) => {
+const ItemList = styled.ul`
+  list-style: none;
+  color: #972525;
+`;
+
+const ContactList = () => {
+  const { contacts, filter } = useSelector(state => state.contacts);
+  const filteredContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(filter.toLowerCase())
+  );
+
   return (
-    <ul>
-      {contacts.map(contact => (
-        <li key={contact.id}>
-          {' '}
-          {contact.name}: {contact.number}
-          <button onClick={() => onDeleteContact(contact.id)}>Delete</button>
-        </li>
+    <ItemList>
+      {filteredContacts.map(contact => (
+        <ContactListItem key={contact.id} contact={contact} />
       ))}
-    </ul>
+    </ItemList>
   );
 };
 

@@ -1,60 +1,118 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
+import { nanoid } from 'nanoid';
+import { useDispatch, useSelector } from 'react-redux';
+import { actions } from '../contactsSlice';
+import styled from 'styled-components';
 
-class ContactForm extends Component {
-  state = {
-    name: '',
-    number: '',
-  };
+const FormContainer = styled.form`
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #000;
+  border-radius: 10px;
+  padding: 30px;
+  background-image: url('https://cdn.pixabay.com/photo/2014/08/24/19/01/apps-426559_1280.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+`;
+const StyledName = styled.span`
+  color: white;
+  font-weight: bold;
+`;
 
-  handleChange = e => {
-    this.setState({ [e.target.name]: e.target.value });
-  };
+const StyledNumber = styled.span`
+  color: white;
+  font-weight: bold;
+`;
 
-  handleSubmit = e => {
-    e.preventDefault();
+const LabelName = styled.label`
+  display: flex;
+  flex-direction: column;
+`;
 
-    const { name, number } = this.state;
-    const { contacts, onAddContact } = this.props;
+const InputName = styled.input`
+  margin-top: 5px;
+`;
 
-    const isNameExist = contacts.some(
-      contact => contact.name.toLowerCase() === name.toLowerCase()
-    );
+const AddButton = styled.button`
+  margin-top: 8px;
+  width: 90px;
+  height: 30px;
+  background-color: #e8d85dc5;
+  border-radius: 5px;
+  border-style: none;
+  transition: background-color 0.3s ease;
 
-    if (isNameExist) {
-      alert(`${name} is already in contacts!`);
-      return;
-    }
-
-    onAddContact({ name, number });
-
-    this.setState({ name: '', number: '' });
-  };
-
-  render() {
-    const { name, number } = this.state;
-
-    return (
-      <form onSubmit={this.handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Enter name"
-          value={name}
-          onChange={this.handleChange}
-          required
-        />
-        <input
-          type="tel"
-          name="number"
-          placeholder="Enter phone number"
-          value={number}
-          onChange={this.handleChange}
-          required
-        />
-        <button type="submit">Add contact</button>
-      </form>
-    );
+  &:hover,
+  &:focus {
+    background-color: #18c944;
+    color: white;
+    cursor: pointer;
   }
-}
+`;
+
+const ContactForm = () => {
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
+  const dispatch = useDispatch();
+
+  // Get the current list of contacts from the Redux store
+  const contacts = useSelector(state => state.contacts.contacts);
+
+  const handleNameChange = event => {
+    setName(event.target.value);
+  };
+
+  const handleNumberChange = event => {
+    let input = event.target.value;
+    input = input.replace(/\D/g, '').slice(0, 8);
+    input = input.replace(/(\d{3})(\d{2})(\d{2})/, '$1-$2-$3');
+    setNumber(input);
+  };
+
+  const handleSubmit = event => {
+    event.preventDefault();
+    const newContact = { id: nanoid(), name, number };
+
+    // Check if a contact with the same name already exists
+    const doesExist = contacts.some(
+      contact => contact.name.toLowerCase() === newContact.name.toLowerCase()
+    );
+
+    if (doesExist) {
+      alert(`${newContact.name} is already in contacts.`);
+    } else {
+      dispatch(actions.addContact(newContact));
+    }
+    setName('');
+    setNumber('');
+  };
+
+  return (
+    <FormContainer onSubmit={handleSubmit}>
+      <LabelName>
+        <StyledName>Name:</StyledName>
+        <InputName
+          type="text"
+          value={name}
+          onChange={handleNameChange}
+          required
+          placeholder="Name"
+        />
+      </LabelName>
+      <LabelName>
+        <StyledNumber>Number:</StyledNumber>
+        <InputName
+          type="tel"
+          pattern="[0-9]{3}-[0-9]{2}-[0-9]{2}"
+          placeholder="222-22-22"
+          value={number}
+          onChange={handleNumberChange}
+          required
+        />
+      </LabelName>
+      <AddButton type="submit">Add contact</AddButton>
+    </FormContainer>
+  );
+};
 
 export default ContactForm;

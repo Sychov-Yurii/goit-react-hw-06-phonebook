@@ -1,14 +1,19 @@
-import React from 'react';
+import styled from 'styled-components';
 
-const Filter = ({ value, onChange }) => {
-  return (
-    <input
+const StyledInput = styled.input`
+  margin-left: 10px;
+`;
+
+const Filter = ({ value, onChange }) => (
+  <label>
+    Find contacts by name:
+    <StyledInput
       type="text"
-      placeholder="Search contacts"
       value={value}
       onChange={onChange}
+      placeholder="Search contacts..."
     />
-  );
-};
+  </label>
+);
 
 export default Filter;
